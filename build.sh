@@ -52,7 +52,7 @@ MOVE=y
 
 # folder they should be moved to
 if [ $MOVE = "y" ]; then
-	mkdir cloud
+   	mkdir cloud
 	STORAGE=cloud
 fi
 
@@ -81,9 +81,9 @@ THREADS=9
 SFTP=y
 
 HOST[0]=upload.goo.im
-USER[0]=mithun46
+USER[0]=pacman
 PASSWORD[0]=????
-FTPDIR[0]=public_html/PAC/$PRODUCT
+FTPDIR[0]=public_html/$PRODUCT
 
 HOST[2]=basketbuild.com
 USER[2]=u71569905-pacman
