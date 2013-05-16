@@ -52,7 +52,7 @@ MOVE=y
 
 # folder they should be moved to
 if [ $MOVE = "y" ]; then
-   mkdir cloud
+	mkdir cloud
 	STORAGE=cloud
 fi
 
@@ -81,9 +81,9 @@ THREADS=9
 SFTP=y
 
 HOST[0]=upload.goo.im
-USER[0]=pacman
+USER[0]=mithun46
 PASSWORD[0]=????
-FTPDIR[0]=public_html/$PRODUCT
+FTPDIR[0]=public_html/PAC/$PRODUCT
 
 HOST[2]=basketbuild.com
 USER[2]=u71569905-pacman
@@ -116,7 +116,16 @@ cd vendor/cm
 cd ./../..
 echo -e ""
 
+# PAC device dependencies
+echo -e ""
+echo -e "${bldblu}Looking for PAC product dependencies ${txtrst}${cya}"
+./vendor/pac/tools/getdependencies.py $DEVICE
+echo -e "${txtrst}"
+
+
 rm -f out/target/product/*/obj/KERNEL_OBJ/.version
+
+echo -e "${cya}Building ${bldgrn}P ${bldppl}A ${bldblu}C ${bldylw}v$VERSION ${txtrst}";
 
 	echo -n "Starting build..."
 	. build/envsetup.sh && lunch $BRNCHCMD && brunch $BRNCHCMD -j"$THREADS"
