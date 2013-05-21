@@ -100,6 +100,12 @@ echo -e "${txtrst}"
 
 rm -f out/target/product/*/obj/KERNEL_OBJ/.version
 
+if [ $CLOBBER = "y" ]; then
+	echo -n "${bldblu}Cleaning intermediates and output files ${txtrst}"
+	make clobber -j"$THREADS"
+	echo "done!"
+fi
+
 	echo -n "Starting build..."
 	. build/envsetup.sh && lunch $BRNCHCMD && brunch $BRNCHCMD -j"$THREADS"
 	echo "done!"
@@ -123,13 +129,6 @@ cd $HOME
 
 rm -f out/target/product/*/pac_*-ota-eng.*.zip
 
-#----------------------Don't Be Messy--------------------#
-
-if [ $CLOBBER = "y" ]; then
-	echo -n "${bldblu}Cleaning intermediates and output files ${txtrst}"
-	make clobber -j"$THREADS"
-	echo "done!"
-fi
 
 # finished? get elapsed time
 res2=$(date +%s.%N)
