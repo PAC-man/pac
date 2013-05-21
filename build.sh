@@ -44,14 +44,12 @@ echo -e $bldcya"#▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 
 #-------------------ROMS To Be Built------------------#
 
-PRODUCT=$1
-BRNCHCMD=pac_"$PRODUCT"-userdebug
-BUILDNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$shell date +%Y%m%d-%H%M%S
-OUTPTNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$shell date +%Y%m%d-%H%M%S
-
 # your build source code directory path
 SAUCE=$DIR
 
+# Device
+echo -e "${bldblu}Please write the codename of the device ${txtrst}"
+read PRODUCT
 
 # generate an MD5
 echo -e "${bldblu}Please write to Generate MD5 or not followed by [ENTER] [y/n] ${txtrst}"
@@ -68,6 +66,10 @@ read CLOBBER
 #build threads
 echo -e "${bldblu}Please write desired threads followed by [ENTER] ${txtrst}"
 read THREADS
+
+BRNCHCMD=pac_"$PRODUCT"-userdebug
+BUILDNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$shell date +%Y%m%d-%H%M%S
+OUTPTNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$shell date +%Y%m%d-%H%M%S
 
 #---------------------Build Bot Code-------------------#
 
