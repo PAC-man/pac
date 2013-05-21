@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# get current path
-reldir=`dirname $0`
-cd $reldir#!/bin/bash
-
 # leave alone
 DATE=`eval date +%m`-`eval date +%d`
 res1=$(date +%s.%N)
