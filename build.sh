@@ -1,9 +1,16 @@
 #!/bin/bash
 
-# get current path
-reldir=`dirname $0`
-cd $reldir
+# leave alone
+res1=$(date +%s.%N)
 DIR=`pwd`
+LOL=`$shell date +%Y%m%d-%H%M%S`
+
+# PAC version
+MAJOR=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MAJOR = *' | sed  's/PAC_VERSION_MAJOR = //g')
+MINOR=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MINOR = *' | sed  's/PAC_VERSION_MINOR = //g')
+MAINTENANCE=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MAINTENANCE = *' | sed  's/PAC_VERSION_MAINTENANCE = //g')
+VERSION=$MAJOR.$MINOR.$MAINTENANCE
+
 
 # Colorize and add text parameters
 red=$(tput setaf 1)             #  red
@@ -18,54 +25,76 @@ bldppl=${txtbld}$(tput setaf 5) #  purple
 bldcya=${txtbld}$(tput setaf 6) #  cyan
 txtrst=$(tput sgr0)             # Reset
 
-THREADS="16"
-DEVICE="$1"
-EXTRAS="$2"
-
-# get current version
-MAJOR=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MAJOR = *' | sed  's/PAC_VERSION_MAJOR = //g')
-MINOR=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MINOR = *' | sed  's/PAC_VERSION_MINOR = //g')
-MAINTENANCE=$(cat $DIR/vendor/pac/config/pac_common.mk | grep 'PAC_VERSION_MAINTENANCE = *' | sed  's/PAC_VERSION_MAINTENANCE = //g')
-VERSION=$MAJOR.$MINOR.$MAINTENANCE
-
-# if we have not extras, reduce parameter index by 1
-if [ "$EXTRAS" == "true" ] || [ "$EXTRAS" == "false" ]
-then
-   SYNC="$2"
-   UPLOAD="$3"
-else
-   SYNC="$3"
-   UPLOAD="$4"
-fi
-
-# get time of startup
-res1=$(date +%s.%N)
-
-# we don't allow scrollback buffer
+# Scratch that
 echo -e '\0033\0143'
 clear
 
-echo -e "${cya}Building ${bldgrn}P ${bldppl}A ${bldblu}C ${bldylw}v$VERSION ${txtrst}";
+echo -e $bldcya"#####################################################"$txtrst"  "
+echo -e $bldcya"# ____                                              #"$txtrst"  "
+echo -e $bldcya"#/\  _'\                /'\_/'\                     #"$txtrst"  "
+echo -e $bldcya"#\ \ \_\ \ __      ___ /\      \     __      ___    #"$txtrst"  "
+echo -e $bldcya"# \ \ '__/'__'\   /'___\ \ \__\ \  /'__'\  /' _ '\  #"$txtrst"  "
+echo -e $bldcya"#  \ \ \/\ \_\.\_/\ \__/\ \ \_/\ \/\ \_\.\_/\ \/\ \ #"$txtrst"  "
+echo -e $bldcya"#   \ \_\ \__/.\_\ \____\\ \_\\ \_\ \__/.\_\ \_\ \_\#"$txtrst"  "
+echo -e $bldcya"#    \/_/\/__/\/_/\/____/ \/_/ \/_/\/__/\/_/\/_/\/_/#"$txtrst"  "
+echo -e $bldcya"#####################################################"$txtrst"  "
+echo -e $bldcya"#                                                   #"$txtrst"  "
+echo -e ${cya}"#               Building ${bldgrn}P ${bldppl}A ${bldblu}C ${bldylw}v$VERSION              #${txtrst}";
+echo -e $bldcya"#                                                   #"$txtrst"  "
 
-# PAC device dependencies
-echo -e ""
-echo -e "${bldblu}Looking for PAC product dependencies ${txtrst}${cya}"
-./vendor/pac/tools/getdependencies.py $DEVICE
-echo -e "${txtrst}"
+#-------------------ROMS To Be Built------------------#
 
-# decide what command to execute
-case "$EXTRAS" in
-   threads)
-       echo -e "${bldblu}Please write desired threads followed by [ENTER] ${txtrst}"
-       read threads
-       THREADS=$threads;;
-   clean)
-       echo -e ""
-       echo -e "${bldblu}Cleaning intermediates and output files ${txtrst}"
-       make clean > /dev/null;;
-esac
+PRODUCT=$1
+BRNCHCMD=pac_"$PRODUCT"-userdebug
+BUILDNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$LOL
+OUTPTNME=$PRODUCT"_PAC_JB_4.2.2-v"$VERSION"_"$LOL
 
-# download prebuilt files
+# your build source code directory path
+SAUCE=$DIR
+
+
+# generate an MD5
+echo -e "${bldblu}Please write to Generate MD5 or not followed by [ENTER] [y/n] ${txtrst}"
+read MD5 
+
+# sync repositories
+echo -e "${bldblu}Please write to Sync with latest sources or not followed by [ENTER] [y/n] ${txtrst}"
+read SYNC
+
+# run make clobber after build
+echo -e "${bldblu}Please write to clobber or not followed by [ENTER] [y/n] ${txtrst}"
+read CLOBBER
+
+#build threads
+echo -e "${bldblu}Please write desired threads followed by [ENTER] ${txtrst}"
+read THREADS
+
+#---------------------Build Bot Code-------------------#
+
+echo -n "Moving to source directory..."
+cd $SAUCE
+echo "done!"
+
+if [ $CLOBBER = "y" ]; then
+	echo -n "${bldblu}Cleaning intermediates and output files ${txtrst}"
+	make clobber -j"$THREADS"
+	echo "done!"
+fi
+
+if [ $CLOBBER = "n" ]; then
+	echo -n "${bldblu}Removing previous build.prop ${txtrst}"
+	rm out/target/product/$PRODUCT/system/build.prop
+	echo "done!"
+fi
+
+
+if [ $SYNC = "y" ]; then
+	echo -n "${bldblu}Fetching latest sources ${txtrst}"
+	repo sync -j"$THREADS"
+	echo "done!"
+fi
+
+# Download Prebuild Files
 echo -e ""
 echo -e "${bldblu}Downloading prebuilts ${txtrst}"
 cd vendor/cm
@@ -73,35 +102,32 @@ cd vendor/cm
 cd ./../..
 echo -e ""
 
-# sync with latest sources
+# PAC device dependencies
 echo -e ""
-if [ "$SYNC" == "true" ]
-then
-   echo -e "${bldblu}Fetching latest sources ${txtrst}"
-   repo sync -j"$THREADS"
-   echo -e ""
-fi
+echo -e "${bldblu}Looking for PAC product dependencies ${txtrst}${cya}"
+./vendor/pac/tools/getdependencies.py $PRODUCT
+echo -e "${txtrst}"
+
 
 rm -f out/target/product/*/obj/KERNEL_OBJ/.version
 
-# setup environment
-echo -e "${bldblu}Setting up environment ${txtrst}"
-. build/envsetup.sh
+	echo -n "Starting build..."
+	. build/envsetup.sh && lunch $BRNCHCMD && brunch $BRNCHCMD -j"$THREADS"
+	echo "done!"
 
-# lunch device
-echo -e ""
-echo -e "${bldblu}Lunching device ${txtrst}"
-lunch "pac_$DEVICE-userdebug";
+	if [ $MD5 = "y" ]; then
+		echo -n "Generating MD5..."
+		md5sum $SAUCE/out/target/product/$PRODUCT/$BUILDNME".zip" | sed 's|'$SAUCE'/out/target/product/'$PRODUCT'/||g' > $SAUCE/out/target/product/$PRODUCT/$BUILDNME".md5sum.txt"
+		echo "done!"
+	fi
 
-echo -e ""
-echo -e "${bldblu}Starting compilation ${txtrst}"
-
-# start compilation
-mka bacon
-echo -e ""
+cd $HOME
 
 rm -f out/target/product/*/pac_*-ota-eng.*.zip
+
 
 # finished? get elapsed time
 res2=$(date +%s.%N)
 echo "${bldgrn}Total time elapsed: ${txtrst}${grn}$(echo "($res2 - $res1) / 60"|bc ) minutes ($(echo "$res2 - $res1"|bc ) seconds) ${txtrst}"
+
+echo "PacMan-ROM packages built !"
