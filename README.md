@@ -27,21 +27,13 @@ Now you can run our build script:
 example:
     ./build-pac.sh urushi
 
-You can also use a second parameter for syncing sources before building
 
-    ./build-pac.sh -device- true
-
-
-There are also a few parameters that you can use together with before mentioned:
+There are also a few parameters that you can use when the script is executed:
 
 * threads: Allows to choose a number of threads for syncing operation
 * clean: Removes intermediates and output files
+* sync: Sync the repo before building
+* And many more
 
-The usage is the same
-    
-    ./build-pac.sh -device- -parameters- true
-
-
-Parameters will be considered false unless you set them to true
 
 This will make a signed zip located on out/target/product/-device-.
